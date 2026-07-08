@@ -33,15 +33,18 @@
 <script>
   var params = new URLSearchParams(location.search);
   var deep;
+  var isSetup = !!params.get('token');
 
-  if (params.get('token')) {
+  if (isSetup) {
     // Setup mode — configure token + database.
     deep = 'notionlookup://setup?token=' + encodeURIComponent(params.get('token'));
     ['db','database','ticketProp','bundleProp'].forEach(function(k){
       var v = params.get(k);
       if (v) deep += '&' + (k === 'database' ? 'db' : k) + '=' + encodeURIComponent(v);
     });
-    document.getElementById('title').textContent = 'Настраиваю Notion Lookup…';
+    document.getElementById('title').textContent = 'Подключаю Notion Lookup…';
+    document.getElementById('status').textContent =
+      'Разреши открыть приложение в диалоге браузера. Эту вкладку можно закрыть после.';
   } else {
     // Lookup mode — pass the query straight through.
     deep = 'notionlookup://lookup?q=' + encodeURIComponent(params.get('q') || '');
@@ -52,11 +55,14 @@
   }
 
   document.getElementById('open').href = deep;
-  if (params.get('token') || params.get('q')) {
+  if (isSetup || params.get('q')) {
     location.href = deep;
-    // Best-effort: close the tab after the app took over. Browsers only
-    // honour this for script-opened tabs, so the message stays as fallback.
-    setTimeout(function(){ window.close(); }, 700);
+    // Auto-close only for quick lookups. Setup shows a browser "open the
+    // app?" dialog the user must confirm — closing the tab would dismiss
+    // it before they can, so the setup tab stays open.
+    if (!isSetup) {
+      setTimeout(function(){ window.close(); }, 700);
+    }
   }
 </script>
 </body>
