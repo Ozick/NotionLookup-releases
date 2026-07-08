@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notion Lookup</title>
+<style>
+  html,body{height:100%;margin:0;font:15px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro",sans-serif;
+    background:#1d1b2e;color:#eceaf5;display:flex;align-items:center;justify-content:center;text-align:center}
+  .box{max-width:420px;padding:32px}
+  .icon{width:72px;height:72px;border-radius:16px;margin:0 auto 18px;
+    background:linear-gradient(160deg,#6b63ec,#38267f);display:flex;align-items:center;justify-content:center;
+    box-shadow:0 8px 24px rgba(0,0,0,.35)}
+  .icon svg{width:38px;height:38px;fill:none;stroke:#fff;stroke-width:3.4;stroke-linecap:round}
+  h1{font-size:20px;margin:0 0 6px}
+  p{color:#a6a2c4;margin:6px 0}
+  a.q{color:#b7b0ff;font-family:ui-monospace,SFMono-Regular,monospace;word-break:break-all}
+  a.btn{display:inline-block;margin-top:16px;padding:9px 18px;border-radius:9px;
+    background:#6b63ec;color:#fff;text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+  <div class="box">
+    <div class="icon"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg></div>
+    <h1>Открываю в Notion Lookup…</h1>
+    <p id="status">Если приложение не открылось автоматически —</p>
+    <a class="btn" id="open" href="#">Открыть</a>
+    <p style="margin-top:20px;font-size:13px">Нет приложения?
+      <a href="https://github.com/Ozick/NotionLookup-releases/releases/latest" style="color:#b7b0ff">Скачать</a>
+    </p>
+  </div>
+<script>
+  // Pass whatever is in ?q= straight through to the app's deep link.
+  var params = new URLSearchParams(location.search);
+  var q = params.get('q') || '';
+  var deep = 'notionlookup://lookup?q=' + encodeURIComponent(q);
+  document.getElementById('open').href = deep;
+  if (q) { location.href = deep; }
+  else { document.getElementById('status').textContent = 'Добавь ?q=… к ссылке, например ?q=604509'; }
+</script>
+</body>
+</html>
