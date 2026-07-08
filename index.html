@@ -14,29 +14,50 @@
   .icon svg{width:38px;height:38px;fill:none;stroke:#fff;stroke-width:3.4;stroke-linecap:round}
   h1{font-size:20px;margin:0 0 6px}
   p{color:#a6a2c4;margin:6px 0}
-  a.q{color:#b7b0ff;font-family:ui-monospace,SFMono-Regular,monospace;word-break:break-all}
   a.btn{display:inline-block;margin-top:16px;padding:9px 18px;border-radius:9px;
     background:#6b63ec;color:#fff;text-decoration:none;font-weight:600}
+  .hint{margin-top:22px;font-size:13px}
+  .hint a{color:#b7b0ff}
 </style>
 </head>
 <body>
   <div class="box">
     <div class="icon"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg></div>
-    <h1>Открываю в Notion Lookup…</h1>
-    <p id="status">Если приложение не открылось автоматически —</p>
-    <a class="btn" id="open" href="#">Открыть</a>
-    <p style="margin-top:20px;font-size:13px">Нет приложения?
-      <a href="https://github.com/Ozick/NotionLookup-releases/releases/latest" style="color:#b7b0ff">Скачать</a>
+    <h1 id="title">Открываю в Notion Lookup…</h1>
+    <p id="status">Можно закрыть эту вкладку.</p>
+    <a class="btn" id="open" href="#">Открыть вручную</a>
+    <p class="hint">Нет приложения?
+      <a href="https://github.com/Ozick/NotionLookup-releases/releases/latest">Скачать</a>
     </p>
   </div>
 <script>
-  // Pass whatever is in ?q= straight through to the app's deep link.
   var params = new URLSearchParams(location.search);
-  var q = params.get('q') || '';
-  var deep = 'notionlookup://lookup?q=' + encodeURIComponent(q);
+  var deep;
+
+  if (params.get('token')) {
+    // Setup mode — configure token + database.
+    deep = 'notionlookup://setup?token=' + encodeURIComponent(params.get('token'));
+    ['db','database','ticketProp','bundleProp'].forEach(function(k){
+      var v = params.get(k);
+      if (v) deep += '&' + (k === 'database' ? 'db' : k) + '=' + encodeURIComponent(v);
+    });
+    document.getElementById('title').textContent = 'Настраиваю Notion Lookup…';
+  } else {
+    // Lookup mode — pass the query straight through.
+    deep = 'notionlookup://lookup?q=' + encodeURIComponent(params.get('q') || '');
+    if (!params.get('q')) {
+      document.getElementById('title').textContent = 'Notion Lookup';
+      document.getElementById('status').textContent = 'Добавь ?q=… к ссылке, например ?q=604509';
+    }
+  }
+
   document.getElementById('open').href = deep;
-  if (q) { location.href = deep; }
-  else { document.getElementById('status').textContent = 'Добавь ?q=… к ссылке, например ?q=604509'; }
+  if (params.get('token') || params.get('q')) {
+    location.href = deep;
+    // Best-effort: close the tab after the app took over. Browsers only
+    // honour this for script-opened tabs, so the message stays as fallback.
+    setTimeout(function(){ window.close(); }, 700);
+  }
 </script>
 </body>
 </html>
