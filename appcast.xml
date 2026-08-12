@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Searchy</title>
+    <item>
+      <title>0.1.85</title>
+      <sparkle:version>202608121835</sparkle:version>
+      <sparkle:shortVersionString>0.1.85</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <pubDate>Wed, 12 Aug 2026 18:37:19 +0000</pubDate>
+      <enclosure url="https://github.com/Ozick/NotionLookup-releases/releases/download/v0.1.85/Searchy-0.1.85.dmg" sparkle:edSignature="oZxfxXK3PcU6V70yzvhMxYdP3QWzIn5yhU2Yeew/8wrVGmKTA5CrPkKg74jk4ffBYyQmNLNTbUGUTY97UcJzCQ==" length="3744254" type="application/octet-stream"/>
+    </item>
+  </channel>
+</rss>
