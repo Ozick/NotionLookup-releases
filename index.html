@@ -34,6 +34,7 @@
   var params = new URLSearchParams(location.search);
   var deep;
   var isSetup = !!params.get('token');
+  var scheduleNumber = params.get('schedule');
 
   if (isSetup) {
     // Setup mode — configure token + database.
@@ -45,6 +46,11 @@
     document.getElementById('title').textContent = 'Подключаю Searchy…';
     document.getElementById('status').textContent =
       'Разреши открыть приложение в диалоге браузера. Эту вкладку можно закрыть после.';
+  } else if (scheduleNumber) {
+    // Planning mode — open the task planner for one six-digit app number.
+    deep = 'notionlookup://schedule?app=' + encodeURIComponent(scheduleNumber);
+    document.getElementById('title').textContent = 'Открываю планирование…';
+    document.getElementById('status').textContent = 'Приложение ' + scheduleNumber;
   } else {
     // Lookup mode — pass the query straight through.
     deep = 'notionlookup://lookup?q=' + encodeURIComponent(params.get('q') || '');
@@ -55,7 +61,7 @@
   }
 
   document.getElementById('open').href = deep;
-  if (isSetup || params.get('q')) {
+  if (isSetup || scheduleNumber || params.get('q')) {
     location.href = deep;
     // Auto-close only for quick lookups. Setup shows a browser "open the
     // app?" dialog the user must confirm — closing the tab would dismiss
