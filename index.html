@@ -63,10 +63,10 @@
   document.getElementById('open').href = deep;
   if (isSetup || scheduleNumber || params.get('q')) {
     location.href = deep;
-    // Auto-close only for quick lookups. Setup shows a browser "open the
-    // app?" dialog the user must confirm — closing the tab would dismiss
-    // it before they can, so the setup tab stays open.
-    if (!isSetup) {
+    // Auto-close only for quick lookups. Setup and planning may show the
+    // browser's first-use "always open with this app" confirmation; closing
+    // the tab here would dismiss that dialog before the user can answer it.
+    if (!isSetup && !scheduleNumber) {
       setTimeout(function(){ window.close(); }, 700);
     }
   }
