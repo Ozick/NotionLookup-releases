@@ -3,12 +3,12 @@
   <channel>
     <title>Searchy</title>
     <item>
-      <title>0.1.110</title>
-      <sparkle:version>202608211438</sparkle:version>
-      <sparkle:shortVersionString>0.1.110</sparkle:shortVersionString>
+      <title>0.1.111</title>
+      <sparkle:version>202608211446</sparkle:version>
+      <sparkle:shortVersionString>0.1.111</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-      <pubDate>Fri, 21 Aug 2026 14:40:21 +0000</pubDate>
-      <enclosure url="https://github.com/Ozick/NotionLookup-releases/releases/download/v0.1.110/Searchy-0.1.110.dmg" sparkle:edSignature="avecu3untrFu3eK1UdNsqxX62V9wxOTh3qy57NxvFCkl74vxZUSZUvZ2ut0MD03LYY1cgncwqlpX4hvfWvuICA==" length="4066373" type="application/octet-stream"/>
+      <pubDate>Fri, 21 Aug 2026 14:48:30 +0000</pubDate>
+      <enclosure url="https://github.com/Ozick/NotionLookup-releases/releases/download/v0.1.111/Searchy-0.1.111.dmg" sparkle:edSignature="1ULqffXLyZrPgy979pFve8UnepxV4vQvFpgM5L1goNv48nfm7LTKrCBKNFa7rbSw921xnYd/TTW4bM9tUOV3Aw==" length="4067078" type="application/octet-stream"/>
     </item>
   </channel>
 </rss>
