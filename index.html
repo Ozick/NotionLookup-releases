@@ -28,7 +28,7 @@
     <h1 id="title">Открываю Searchy…</h1>
     <p id="status">Можно закрыть эту вкладку.</p>
     <a class="btn" id="open" href="#">Открыть вручную</a>
-    <button class="btn secondary" id="close" type="button" hidden>Закрыть вкладку</button>
+    <a class="btn secondary" id="web" href="#" hidden>Открыть веб-версию</a>
     <p class="hint">Нет приложения?
       <a href="https://github.com/Ozick/NotionLookup-releases/releases/latest">Скачать</a>
     </p>
@@ -38,16 +38,7 @@
   var deep;
   var isSetup = !!params.get('token');
   var scheduleNumber = params.get('schedule');
-  var planningPermissionKey = 'searchyPlanningLinkConfirmed';
-  var isFirstPlanningOpen = false;
-
-  if (scheduleNumber) {
-    try {
-      isFirstPlanningOpen = localStorage.getItem(planningPermissionKey) !== '1';
-    } catch (_) {
-      isFirstPlanningOpen = true;
-    }
-  }
+  var webUrl = null;
 
   if (isSetup) {
     // Setup mode — configure token + database.
@@ -62,16 +53,13 @@
   } else if (scheduleNumber) {
     // Planning mode — open the task planner for one six-digit app number.
     deep = 'notionlookup://schedule?app=' + encodeURIComponent(scheduleNumber);
+    webUrl = 'https://notiontools-ce339.web.app/plan?app=' + encodeURIComponent(scheduleNumber);
     document.getElementById('title').textContent = 'Открываю планирование…';
-    document.getElementById('status').textContent = isFirstPlanningOpen
-      ? 'Разреши браузеру всегда открывать Searchy, затем закрой эту вкладку.'
-      : 'Приложение ' + scheduleNumber;
-    if (isFirstPlanningOpen) {
-      document.getElementById('close').hidden = false;
-    }
+    document.getElementById('status').textContent = 'Приложение ' + scheduleNumber;
   } else {
     // Lookup mode — pass the query straight through.
     deep = 'notionlookup://lookup?q=' + encodeURIComponent(params.get('q') || '');
+    webUrl = 'https://notiontools-ce339.web.app/lookup?q=' + encodeURIComponent(params.get('q') || '');
     if (!params.get('q')) {
       document.getElementById('title').textContent = 'Searchy';
       document.getElementById('status').textContent = 'Добавь ?q=… к ссылке, например ?q=604509';
@@ -79,18 +67,16 @@
   }
 
   document.getElementById('open').href = deep;
-  document.getElementById('close').addEventListener('click', function(){
-    try { localStorage.setItem(planningPermissionKey, '1'); } catch (_) {}
-    window.close();
-    document.getElementById('status').textContent = 'Теперь вкладку можно закрыть.';
-  });
+  if (webUrl) document.getElementById('web').href = webUrl;
   if (isSetup || scheduleNumber || params.get('q')) {
     location.href = deep;
-    // Keep the first planning visit open for the browser permission dialog.
-    // The explicit close button records confirmation; later visits auto-close.
-    if (!isSetup && (!scheduleNumber || !isFirstPlanningOpen)) {
-      setTimeout(function(){ window.close(); }, 700);
-    }
+    // Browsers cannot reliably report whether the custom scheme opened.
+    // If this page remains available, reveal a safe authenticated web fallback.
+    if (webUrl) setTimeout(function(){
+      document.getElementById('web').hidden = false;
+      document.getElementById('status').textContent =
+        'Если Searchy не открылась, продолжи в защищённой веб-версии.';
+    }, 1100);
   }
 </script>
 </body>
