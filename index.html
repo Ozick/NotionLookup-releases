@@ -39,6 +39,33 @@
   var isSetup = !!params.get('token');
   var scheduleNumber = params.get('schedule');
   var webUrl = null;
+  var launchAttempted = false;
+  var closeScheduled = false;
+
+  // A custom-scheme navigation has no success callback. Leaving the page is
+  // the reliable signal that macOS handed control to Searchy. Close only then,
+  // so we never dismiss the browser's first-use permission dialog early.
+  function closeAfterHandoff() {
+    if (!launchAttempted || closeScheduled || isSetup) return;
+    closeScheduled = true;
+    setTimeout(function(){
+      window.close();
+      // Regular user-opened tabs cannot always be closed by script. If the
+      // browser keeps this one alive, leave the manual and web fallbacks.
+      setTimeout(function(){
+        closeScheduled = false;
+        if (!document.hidden) {
+          document.getElementById('status').textContent =
+            'Searchy открыта. Эту вкладку можно закрыть.';
+        }
+      }, 250);
+    }, 120);
+  }
+
+  document.addEventListener('visibilitychange', function(){
+    if (document.hidden) closeAfterHandoff();
+  });
+  window.addEventListener('pagehide', closeAfterHandoff);
 
   if (isSetup) {
     // Setup mode — configure token + database.
@@ -67,8 +94,12 @@
   }
 
   document.getElementById('open').href = deep;
+  document.getElementById('open').addEventListener('click', function(){
+    launchAttempted = true;
+  });
   if (webUrl) document.getElementById('web').href = webUrl;
   if (isSetup || scheduleNumber || params.get('q')) {
+    launchAttempted = true;
     location.href = deep;
     // Browsers cannot reliably report whether the custom scheme opened.
     // If this page remains available, reveal a safe authenticated web fallback.
