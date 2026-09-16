@@ -17,6 +17,9 @@
   .btn{display:inline-block;margin:16px 4px 0;padding:9px 18px;border:0;border-radius:9px;
     background:#6b63ec;color:#fff;text-decoration:none;font:inherit;font-weight:600;cursor:pointer}
   .btn.secondary{background:rgba(255,255,255,.1)}
+  .btn.autoclose{display:block;width:max-content;margin:12px auto 0;background:transparent;
+    border:1px solid rgba(255,255,255,.18);color:#c8c3df;font-size:13px}
+  .btn.autoclose.enabled{border-color:rgba(111,220,155,.42);color:#8de4b1}
   [hidden]{display:none!important}
   .hint{margin-top:22px;font-size:13px}
   .hint a{color:#b7b0ff}
@@ -29,6 +32,7 @@
     <p id="status">Можно закрыть эту вкладку.</p>
     <a class="btn" id="open" href="#">Открыть вручную</a>
     <a class="btn secondary" id="web" href="#" hidden>Открыть веб-версию</a>
+    <button class="btn autoclose" id="auto-close" type="button">Закрывать автоматически</button>
     <p class="hint">Нет приложения?
       <a href="https://github.com/Ozick/NotionLookup-releases/releases/latest">Скачать</a>
     </p>
@@ -41,31 +45,66 @@
   var webUrl = null;
   var launchAttempted = false;
   var closeScheduled = false;
+  var handoffObserved = false;
+  var autoCloseKey = 'searchy.autoClose.v1';
+  var autoCloseEnabled = false;
+  try { autoCloseEnabled = localStorage.getItem(autoCloseKey) === '1'; } catch (_) {}
 
-  // A custom-scheme navigation has no success callback. Leaving the page is
-  // the reliable signal that macOS handed control to Searchy. Close only then,
-  // so we never dismiss the browser's first-use permission dialog early.
-  function closeAfterHandoff() {
-    if (!launchAttempted || closeScheduled || isSetup) return;
+  function updateAutoCloseButton() {
+    var button = document.getElementById('auto-close');
+    if (isSetup) {
+      button.hidden = true;
+      return;
+    }
+    button.textContent = autoCloseEnabled
+      ? '✓ Автозакрытие включено'
+      : 'Закрывать автоматически';
+    button.classList.toggle('enabled', autoCloseEnabled);
+  }
+
+  // Safari can reject window.close() while it is backgrounded. Try once when
+  // Searchy takes focus and again when the user returns to Safari. If this tab
+  // was not script-created, go back to its opener page instead of leaving the
+  // redirector hanging around.
+  function closeAfterHandoff(force) {
+    if ((!handoffObserved && !force) || !autoCloseEnabled || closeScheduled || isSetup) return;
     closeScheduled = true;
-    setTimeout(function(){
+    document.getElementById('status').textContent = 'Закрываю вкладку…';
+    setTimeout(function() {
       window.close();
-      // Regular user-opened tabs cannot always be closed by script. If the
-      // browser keeps this one alive, leave the manual and web fallbacks.
-      setTimeout(function(){
+      setTimeout(function() {
         closeScheduled = false;
-        if (!document.hidden) {
-          document.getElementById('status').textContent =
-            'Searchy открыта. Эту вкладку можно закрыть.';
+        if (!document.hidden && history.length > 1) {
+          history.back();
+        } else if (!document.hidden) {
+          document.getElementById('status').textContent = 'Searchy открыта. Эту вкладку можно закрыть.';
         }
-      }, 250);
-    }, 120);
+      }, 220);
+    }, force ? 0 : 80);
   }
 
   document.addEventListener('visibilitychange', function(){
-    if (document.hidden) closeAfterHandoff();
+    if (document.hidden && launchAttempted) {
+      handoffObserved = true;
+      closeAfterHandoff(false);
+    } else if (!document.hidden && handoffObserved) {
+      closeAfterHandoff(false);
+    }
   });
-  window.addEventListener('pagehide', closeAfterHandoff);
+  window.addEventListener('pagehide', function(){
+    if (launchAttempted) handoffObserved = true;
+    closeAfterHandoff(false);
+  });
+  window.addEventListener('focus', function(){ closeAfterHandoff(false); });
+
+  document.getElementById('auto-close').addEventListener('click', function(){
+    autoCloseEnabled = true;
+    try { localStorage.setItem(autoCloseKey, '1'); } catch (_) {}
+    updateAutoCloseButton();
+    handoffObserved = true;
+    closeAfterHandoff(true);
+  });
+  updateAutoCloseButton();
 
   if (isSetup) {
     // Setup mode — configure token + database.
@@ -105,8 +144,11 @@
     // If this page remains available, reveal a safe authenticated web fallback.
     if (webUrl) setTimeout(function(){
       document.getElementById('web').hidden = false;
-      document.getElementById('status').textContent =
-        'Если Searchy не открылась, продолжи в защищённой веб-версии.';
+      if (!closeScheduled) {
+        document.getElementById('status').textContent = autoCloseEnabled
+          ? 'Если вкладка не закрылась, вернись в Safari — она закроется автоматически.'
+          : 'Если Searchy не открылась, продолжи в защищённой веб-версии.';
+      }
     }, 1100);
   }
 </script>
